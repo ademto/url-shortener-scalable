@@ -1,5 +1,6 @@
 const { PutCommand, GetCommand, UpdateCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
-const { docClient, TABLE_NAME } = require('../config/aws');
+const { DescribeTableCommand } = require('@aws-sdk/client-dynamodb');
+const { docClient, TABLE_NAME, client } = require('../config/aws');
 
 /**
  * Create a new shortened URL entry in DynamoDB
@@ -93,15 +94,21 @@ async function getAllUrls(limit = 100) {
 
 /**
  * Check if DynamoDB connection is healthy
+ * Uses DescribeTable instead of Scan (no data read, just checks table exists)
  */
 async function healthCheck() {
   try {
     const params = {
-      TableName: TABLE_NAME,
-      Limit: 1
+      TableName: TABLE_NAME
     };
-    await docClient.send(new ScanCommand(params));
-    return { success: true, message: 'DynamoDB connection healthy' };
+    const result = await client.send(new DescribeTableCommand(params));
+    
+    // Check if table is ACTIVE
+    if (result.Table.TableStatus === 'ACTIVE') {
+      return { success: true, message: 'DynamoDB connection healthy' };
+    } else {
+      return { success: false, error: `Table status: ${result.Table.TableStatus}` };
+    }
   } catch (error) {
     return { success: false, error: error.message };
   }

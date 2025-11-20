@@ -48,7 +48,7 @@ NODE_ENV=production
 PORT=3000
 AWS_REGION=us-east-1
 DYNAMODB_TABLE_NAME=url-shortener-test
-BASE_URL=http://your-alb-dns-name.us-east-1.elb.amazonaws.com
+BASE_URL=https://ademto.me
 EOF
 
 # Install dependencies
